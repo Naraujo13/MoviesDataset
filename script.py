@@ -1,6 +1,8 @@
 import http.client
 import json
 from pprint import pprint
+import urllib.request
+import os.path
 
 
 
@@ -22,38 +24,47 @@ if __name__ == "__main__":
     #Poster_Size
     poster_size = obj["images"]["poster_sizes"][3]
 
+    #creates directories
+    try:
+        os.mkdir("dataset")
+    except Exception:
+        pass
+    try:
+        os.mkdir("dataset/poster")
+    except Exception:
+        pass
+    try:
+        os.mkdir("dataset/overview")
+    except Exception:
+        pass
 
     movie_request_url = "/3/discover/movie?api_key=287cdab5a6189edf5e200224595a40e0&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page="
+    #For each year
     for year in range(1980, 2017):
         conn.request("GET", movie_request_url + "1&year=" + str(year), payload)
         res = conn.getresponse()
         str_res = res.read().decode('utf-8')
         page_obj = json.loads(str_res)
         total_pages = page_obj["total_pages"]
-        #Itera entre páginas
+        #For each page
         for page in range(1, total_pages):
             conn.request("GET", movie_request_url + str(page) + "&year=" + str(year), payload)
             res = conn.getresponse()
             str_res = res.read().decode('utf-8')
             page_obj = json.loads(str_res)
-            #Itera entre resultados da página
             i = 0
             if page_obj and page_obj["results"]:
+                # For each movie result
                 for movie in page_obj["results"]:
-                    pprint(movie["title"] + " Movie " + str(i) + " - Page " + str(page))
+                    print(movie["title"] + " Movie " + str(i) + " - Page " + str(page))
                     i = i + 1
-
-
-
-    #movie_poster_url = "/rXBB8F6XpHAwci2dihBCcixIHrK.jpg"
-
-    # print("Data:")
-    # print (data)
-    # print("Par1:")
-    # print(base_image_url)
-    # print("Par2:")
-    # print(poster_size)
-    # print("Par3:")
-    # print(movie_poster_url)
-    # print("Final Image Url:")
-    # print(base_image_url + poster_size + movie_poster_url)
+                    poster_path = movie["poster_path"]
+                    #If movie has poster
+                    if (poster_path):
+                        movie_id = str(movie["id"])
+                        #Downloads poster
+                        urllib.request.urlretrieve(secure_base_url + poster_size + poster_path, "dataset/poster/" + movie_id + ".jpg")
+                        #Downloads overview
+                        overview_file = open(movie_id + ".txt", "w")
+                        overview_file.write("overview/poster/" + str(movie["overview"]))
+                        overview_file.close()
