@@ -99,19 +99,19 @@ if __name__ == "__main__":
 
 
                     #If movie has poster
-                    if (movie['poster_path'] != ""):
-                        #Downloads poster
-                        image = requests.get(secure_base_url + poster_size + movie['poster_path']).content
+                    if(movie['overview']):
+                        if (movie['poster_path'] != ""):
+                            #Downloads poster
+                            image = requests.get(secure_base_url + poster_size + movie['poster_path']).content
 
-                        if(image != ""):
-                            f = open("dataset/poster" + movie['poster_path'] + ".jpg", 'wb')
-                            f.write(image)
-                            f.close()
-                    else:
-                        if(movie['overview']):
-                            print(movie['title'])
-                            print(movie['overview'])
-                            noPoster += 1
+                            if(image != ""):
+                                f = open("dataset/poster" + movie['poster_path'] + ".jpg", 'wb')
+                                f.write(image)
+                                f.close()
+                        else:
+                                print(movie['title'])
+                                print(movie['overview'])
+                                noPoster += 1
 
                 for movie in movies:
                     if(movie['overview']):
