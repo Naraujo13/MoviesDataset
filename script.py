@@ -41,7 +41,7 @@ def fetch_movies(first_year, last_year, total_movies, total_noPoster):
                 #print("TOTAL RESULTS: " + str(total_results))
 
                 #For each page
-                for page in range(0, total_pages):
+                for page in range(1, total_pages):
                     #print(page)
                     #Get a page
                     #conn.set_debuglevel(1)
@@ -50,6 +50,8 @@ def fetch_movies(first_year, last_year, total_movies, total_noPoster):
                     res = conn.getresponse()
                     str_res = res.read().decode('utf-8')
                     page_obj = json.loads(str_res)
+
+                    print(request_url)
 
                     if page_obj and page_obj.has_key('results'):
                         # For each movie result
@@ -71,7 +73,7 @@ def fetch_movies(first_year, last_year, total_movies, total_noPoster):
                                 movie['poster_path'] = _['poster_path'].encode("utf-8")
                                 #print(type(_['poster_path']))
 
-                            print(movie['title'])
+                            #print(movie['title'])
                             movies.append(movie)
 
             #verify if a movie has overview and downloads its poster and saves it in a csv file
