@@ -18,14 +18,19 @@ def fetch_movies(first_year, last_year, total_movies, total_noPoster):
         for year in range(first_year, last_year):
             current_year = year
             print(str(year) + ":")
+
             #Do the request for the first page of each year
             #conn.set_debuglevel(1)
+            conn = httplib.HTTPSConnection("api.themoviedb.org")
             request_url = movie_request_url + "1&year=" + str(year);
             conn.request("GET", request_url.replace("\n", ""), payload)
             res = conn.getresponse()
             str_res = res.read()
             page_obj = json.loads(str_res)
             noPoster = 0
+
+            movies = [] #list with all the movies from an year
+
             if page_obj and page_obj.has_key('total_pages') and page_obj.has_key('total_results'):
 
                 total_pages = page_obj["total_pages"]
@@ -33,10 +38,11 @@ def fetch_movies(first_year, last_year, total_movies, total_noPoster):
 
                 #print(page_obj.keys())
                 #print("TOTAL PAGES: " + str(total_pages))
-                #print("TOTAL PAGES: " + str(page_obj["total_results"]))
+                #print("TOTAL RESULTS: " + str(total_results))
 
                 #For each page
                 for page in range(0, total_pages):
+                    #print(page)
                     #Get a page
                     #conn.set_debuglevel(1)
                     request_url = movie_request_url + str(page) + "&year=" + str(year)
@@ -46,9 +52,6 @@ def fetch_movies(first_year, last_year, total_movies, total_noPoster):
                     page_obj = json.loads(str_res)
 
                     if page_obj and page_obj.has_key('results'):
-
-                        movies = []
-
                         # For each movie result
                         for _ in page_obj['results']:
                             movie = dict({
@@ -68,37 +71,41 @@ def fetch_movies(first_year, last_year, total_movies, total_noPoster):
                                 movie['poster_path'] = _['poster_path'].encode("utf-8")
                                 #print(type(_['poster_path']))
 
+                            print(movie['title'])
                             movies.append(movie)
 
-                            #print(movie['title'])
-                            #print(movie['overview'])
-                            #print(movie['poster_path'])
-                            #print("\n")
-
-
+            #verify if a movie has overview and downloads its poster and saves it in a csv file
+            for movie in movies:
+                if(movie['overview']):
+                    attempt = 0
+                    while attempt < 3:
+                        try:
                             #If movie has poster
-                            if(movie['overview']):
-                                if (movie['poster_path'] != ""):
-                                    #Downloads poster
-                                    image = requests.get(secure_base_url + poster_size + movie['poster_path']).content
+                            if (movie['poster_path'] != ""):
+                                #Downloads poster
+                                image = requests.get(secure_base_url + poster_size + movie['poster_path'], timeout=1).content
 
-                                    if(image != ""):
-                                        f = open("dataset/poster" + movie['poster_path'] + ".jpg", 'wb')
-                                        f.write(image)
-                                        f.close()
-                                else:
-                                        #print(movie['title'])
-                                        #print(movie['overview'])
-                                        noPoster += 1
+                                if(image != ""):
+                                    f = open("dataset/poster" + movie['poster_path'], 'wb')
+                                    f.write(image)
+                                    f.close()
+                            else:
+                                    noPoster += 1
 
-                        for movie in movies:
-                            if(movie['overview']):
-                                moviesIndex.write(str(movie['id']) +  ";'" + movie['title'] + "';'" + movie['overview'] + "';" + movie['poster_path'] + "\n")
+                            moviesIndex.write(str(movie['id']) +  ";'" + movie['title'] + "';'" + movie['overview'] + "';" + movie['poster_path'] + "\n")
+                            attempt = 3
+                        except Exception, e:
+                            attempt = attempt + 1
+                            print(e)
+
             print("\tMovies with poster: " + str(total_results - noPoster) + "/" + str(total_results))
             total_movies += total_results
             total_noPoster += noPoster
-    except Exception:
+
+    except Exception as e:
+        print(repr(e))
         return current_year
+
     return last_year
 
 if __name__ == "__main__":
@@ -135,7 +142,8 @@ if __name__ == "__main__":
 
     total_movies= 0
     total_noPoster = 0
-    first_year = 1892
+    #first_year = 1892
+    first_year = 2003
     last_year = 2018
     stopped_year = first_year
 
