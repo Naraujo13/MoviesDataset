@@ -5,10 +5,9 @@
 
 import httplib
 import json
-#import urllib2
 import requests
 import os.path
-from pprint import pprint
+from subprocess import call
 
 def fetch_movies(first_year, last_year, total_movies, total_noPoster):
     current_year = first_year
@@ -51,7 +50,7 @@ def fetch_movies(first_year, last_year, total_movies, total_noPoster):
                     str_res = res.read().decode('utf-8')
                     page_obj = json.loads(str_res)
 
-                    print(request_url)
+                    #print(request_url)
 
                     if page_obj and page_obj.has_key('results'):
                         # For each movie result
@@ -146,7 +145,8 @@ if __name__ == "__main__":
     total_noPoster = 0
     #first_year = 1892
     first_year = 2003
-    last_year = 2018
+    #last_year = 2018
+    last_year = 2005
     stopped_year = first_year
 
     while stopped_year != last_year:
@@ -156,3 +156,6 @@ if __name__ == "__main__":
         print("Stopped at: " + str(stopped_year))
 
     print("Total Movies with Poster: " + str(total_movies - total_noPoster) + "/" + str(total_movies))
+
+    #remove duplicates in the csv file, those are caused because of an api problem
+    call(['sort', '-u', 'dataset/movies.csv', '-o', 'dataset/moviesUnique.csv'])
