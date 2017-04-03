@@ -143,10 +143,8 @@ if __name__ == "__main__":
 
     total_movies= 0
     total_noPoster = 0
-    #first_year = 1892
-    first_year = 2003
-    #last_year = 2018
-    last_year = 2005
+    first_year = 1892
+    last_year = 2018    
     stopped_year = first_year
 
     while stopped_year != last_year:
